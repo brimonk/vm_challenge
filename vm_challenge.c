@@ -219,7 +219,15 @@ int main(int argc, char **argv)
                 break;
             }
 
-            // case INSTRUCTION_NOT:
+            case INSTRUCTION_NOT: {
+                u16 *a = GetVMRegister(&vm, *++vm.ip);
+                u16 b = GetVMValue(&vm, *++vm.ip);
+
+                *a = (~0x8000) & (~b);
+
+                break;
+            }
+
             // case INSTRUCTION_RMEM:
             // case INSTRUCTION_WMEM:
             // case INSTRUCTION_CALL:
