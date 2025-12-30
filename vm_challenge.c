@@ -104,6 +104,7 @@ int main(int argc, char **argv)
     for (; vm.run; vm.ip++) {
     EDDIE_VAN_HALEN:
         switch (GetVMInstruction(&vm)) {
+            NOT_FREDDIE_MERCURY:
             case INSTRUCTION_HALT: {
                 vm.run = false;
                 break;
@@ -267,7 +268,15 @@ int main(int argc, char **argv)
                 break;
             }
 
-            // case INSTRUCTION_RET:
+            case INSTRUCTION_RET: {
+                if (arrlen(vm.stack) == 0) {
+                    goto NOT_FREDDIE_MERCURY;
+                }
+                u16 popped = arrpop(vm.stack);
+                vm.ip = popped + vm.memory;
+                goto EDDIE_VAN_HALEN;
+                break;
+            }
 
             case INSTRUCTION_OUT: {
                 vm.ip++;
@@ -275,12 +284,14 @@ int main(int argc, char **argv)
                 break;
             }
 
-            // case INSTRUCTION_IN: {
-            //     break;
-            // }
+            case INSTRUCTION_IN: {
+                u16 *a = GetVMRegister(&vm, *++vm.ip);
+                int c = getchar() & 0xff;
+                *a = (u16)c;
+                break;
+            }
 
             case INSTRUCTION_NOOP: {
-                printf("NOOP\n");
                 break;
             }
 
