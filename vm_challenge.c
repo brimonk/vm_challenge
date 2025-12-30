@@ -71,6 +71,11 @@ u16 *GetVMRegister(VM *vm, u16 r)
     return IS_REGISTER(r) ? &vm->regs[r - 32768] : &vm->memory[r];
 }
 
+u16 *GetVMMemory(VM *vm, u16 mem)
+{
+    return &vm->memory[IS_REGISTER(mem) ? vm->regs[mem - 32768] : mem];
+}
+
 int main(int argc, char **argv)
 {
     if (argc < 2) {
@@ -239,7 +244,15 @@ int main(int argc, char **argv)
                 break;
             }
 
-            // case INSTRUCTION_RMEM:
+            case INSTRUCTION_RMEM: {
+                u16 *a = GetVMRegister(&vm, *++vm.ip);
+                u16 *b = GetVMMemory(&vm, *++vm.ip);
+
+                *a = *b;
+
+                break;
+            }
+
             // case INSTRUCTION_WMEM:
 
             case INSTRUCTION_CALL: {
