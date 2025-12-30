@@ -100,6 +100,7 @@ int main(int argc, char **argv)
             // case INSTRUCTION_POP:
             // case INSTRUCTION_EQ:
             // case INSTRUCTION_GT:
+
             case INSTRUCTION_JMP: {
                 vm.ip++;
                 vm.ip = GetVMValue(&vm, *vm.ip) + vm.memory;
@@ -107,7 +108,18 @@ int main(int argc, char **argv)
                 break;
             }
 
-            // case INSTRUCTION_JT:
+            case INSTRUCTION_JT: {
+                i16 a = GetVMValue(&vm, *++vm.ip);
+                i16 b = GetVMValue(&vm, *++vm.ip);
+
+                if (a != 0) {
+                    vm.ip = b + vm.memory;
+                    goto EDDIE_VAN_HALEN;
+                }
+
+                break;
+            }
+
             // case INSTRUCTION_JF:
             // case INSTRUCTION_ADD:
             // case INSTRUCTION_MUL:
