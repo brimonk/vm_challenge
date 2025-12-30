@@ -1,10 +1,10 @@
 #include "common.h"
 
 typedef struct VM {
-    i16 regs[8];
-    i16 *memory;
-    i16 *stack;
-    i16 *ip;
+    u16 regs[8];
+    u16 *memory;
+    u16 *stack;
+    u16 *ip;
     i32 run;
 } VM;
 
@@ -44,12 +44,12 @@ VM VMInitialize(void *instructions)
     return vm;
 }
 
-i16 GetVMInstruction(VM *vm)
+u16 GetVMInstruction(VM *vm)
 {
     return *vm->ip;
 }
 
-i16 GetVMValue(VM *vm, i16 v)
+u16 GetVMValue(VM *vm, u16 v)
 {
     if (0 <= v && v <= 32767) {
         return v;
@@ -109,8 +109,8 @@ int main(int argc, char **argv)
             }
 
             case INSTRUCTION_JT: {
-                i16 a = GetVMValue(&vm, *++vm.ip);
-                i16 b = GetVMValue(&vm, *++vm.ip);
+                u16 a = GetVMValue(&vm, *++vm.ip);
+                u16 b = GetVMValue(&vm, *++vm.ip);
 
                 if (a != 0) {
                     vm.ip = b + vm.memory;
@@ -120,7 +120,18 @@ int main(int argc, char **argv)
                 break;
             }
 
-            // case INSTRUCTION_JF:
+            case INSTRUCTION_JF: {
+                u16 a = GetVMValue(&vm, *++vm.ip);
+                u16 b = GetVMValue(&vm, *++vm.ip);
+
+                if (a == 0) {
+                    vm.ip = b + vm.memory;
+                    goto EDDIE_VAN_HALEN;
+                }
+
+                break;
+            }
+
             // case INSTRUCTION_ADD:
             // case INSTRUCTION_MUL:
             // case INSTRUCTION_MOD:
