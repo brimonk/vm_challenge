@@ -230,7 +230,16 @@ int main(int argc, char **argv)
 
             // case INSTRUCTION_RMEM:
             // case INSTRUCTION_WMEM:
-            // case INSTRUCTION_CALL:
+
+            case INSTRUCTION_CALL: {
+                u16 a = GetVMValue(&vm, *++vm.ip);
+                u16 next = vm.ip + 1 - vm.memory;
+                arrput(vm.stack, next);
+                vm.ip = a + vm.memory;
+                goto EDDIE_VAN_HALEN;
+                break;
+            }
+
             // case INSTRUCTION_RET:
 
             case INSTRUCTION_OUT: {
