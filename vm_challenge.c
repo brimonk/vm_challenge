@@ -111,9 +111,28 @@ int main(int argc, char **argv)
                 break;
             }
 
-            // case INSTRUCTION_PUSH:
-            // case INSTRUCTION_POP:
-            // case INSTRUCTION_EQ:
+            case INSTRUCTION_PUSH: {
+                arrput(vm.stack, GetVMValue(&vm, *++vm.ip));
+                break;
+            }
+
+            case INSTRUCTION_POP: {
+                assert(arrlen(vm.stack) > 0);
+                u16 v = arrpop(vm.stack);
+                u16 *a = GetVMRegister(&vm, *++vm.ip);
+                *a = v;
+            }
+
+            case INSTRUCTION_EQ: {
+                u16 *a = GetVMRegister(&vm, *++vm.ip);
+                u16 b = GetVMValue(&vm, *++vm.ip);
+                u16 c = GetVMValue(&vm, *++vm.ip);
+
+                *a = b == c;
+
+                break;
+            }
+
             // case INSTRUCTION_GT:
 
             case INSTRUCTION_JMP: {
