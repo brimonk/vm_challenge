@@ -247,13 +247,16 @@ int main(int argc, char **argv)
             case INSTRUCTION_RMEM: {
                 u16 *a = GetVMRegister(&vm, *++vm.ip);
                 u16 *b = GetVMMemory(&vm, *++vm.ip);
-
                 *a = *b;
-
                 break;
             }
 
-            // case INSTRUCTION_WMEM:
+            case INSTRUCTION_WMEM: {
+                u16 *a = GetVMMemory(&vm, *++vm.ip);
+                u16 b = GetVMValue(&vm, *++vm.ip);
+                *a = b;
+                break;
+            }
 
             case INSTRUCTION_CALL: {
                 u16 a = GetVMValue(&vm, *++vm.ip);
