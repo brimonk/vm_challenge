@@ -62,6 +62,11 @@ u16 GetVMValue(VM *vm, u16 v)
     }
 }
 
+u16 *GetVMRegister(VM *vm, u16 r)
+{
+    return &vm->regs[r - 32768];
+}
+
 int main(int argc, char **argv)
 {
     if (argc < 2) {
@@ -95,7 +100,13 @@ int main(int argc, char **argv)
                 break;
             }
 
-            // case INSTRUCTION_SET:
+            case INSTRUCTION_SET: {
+                u16 *a = GetVMRegister(&vm, *++vm.ip);
+                u16 b = GetVMValue(&vm, *++vm.ip);
+                *a = b;
+                break;
+            }
+
             // case INSTRUCTION_PUSH:
             // case INSTRUCTION_POP:
             // case INSTRUCTION_EQ:
