@@ -188,9 +188,37 @@ int main(int argc, char **argv)
             }
 
             // case INSTRUCTION_MUL:
-            // case INSTRUCTION_MOD:
-            // case INSTRUCTION_AND:
-            // case INSTRUCTION_OR:
+
+            case INSTRUCTION_MOD: {
+                u16 *a = GetVMRegister(&vm, *++vm.ip);
+                u16 b = GetVMValue(&vm, *++vm.ip);
+                u16 c = GetVMValue(&vm, *++vm.ip);
+
+                *a = b % c;
+
+                break;
+            }
+
+            case INSTRUCTION_AND: {
+                u16 *a = GetVMRegister(&vm, *++vm.ip);
+                u16 b = GetVMValue(&vm, *++vm.ip);
+                u16 c = GetVMValue(&vm, *++vm.ip);
+
+                *a = b & c;
+
+                break;
+            }
+
+            case INSTRUCTION_OR: {
+                u16 *a = GetVMRegister(&vm, *++vm.ip);
+                u16 b = GetVMValue(&vm, *++vm.ip);
+                u16 c = GetVMValue(&vm, *++vm.ip);
+
+                *a = b | c;
+
+                break;
+            }
+
             // case INSTRUCTION_NOT:
             // case INSTRUCTION_RMEM:
             // case INSTRUCTION_WMEM:
