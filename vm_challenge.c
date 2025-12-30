@@ -112,7 +112,8 @@ int main(int argc, char **argv)
             }
 
             case INSTRUCTION_PUSH: {
-                arrput(vm.stack, GetVMValue(&vm, *++vm.ip));
+                u16 v = GetVMValue(&vm, *++vm.ip);
+                arrput(vm.stack, v);
                 break;
             }
 
@@ -121,6 +122,7 @@ int main(int argc, char **argv)
                 u16 v = arrpop(vm.stack);
                 u16 *a = GetVMRegister(&vm, *++vm.ip);
                 *a = v;
+                break;
             }
 
             case INSTRUCTION_EQ: {
@@ -133,7 +135,15 @@ int main(int argc, char **argv)
                 break;
             }
 
-            // case INSTRUCTION_GT:
+            case INSTRUCTION_GT: {
+                u16 *a = GetVMRegister(&vm, *++vm.ip);
+                u16 b = GetVMValue(&vm, *++vm.ip);
+                u16 c = GetVMValue(&vm, *++vm.ip);
+
+                *a = b > c;
+
+                break;
+            }
 
             case INSTRUCTION_JMP: {
                 vm.ip++;
