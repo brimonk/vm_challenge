@@ -1,5 +1,7 @@
 #include "common.h"
 
+#include <unistd.h>
+
 /*
  * If you find yourself trapped in an alternate dimension with nothing but a
  * hand-held teleporter, you will need to extract the confirmation algorithm,
@@ -16,6 +18,7 @@
 typedef struct VM {
     u16 regs[8];
     u16 *memory;
+    size_t memory_size;
     u16 *stack;
     u16 *ip;
     i32 run;
@@ -76,10 +79,15 @@ char *INSTRUCTION_STRINGS[] = {
     "NOOP"
 };
 
-VM VMInitialize(void *instructions)
+i32 INSTRUCTION_ARGS[] = {
+    0, 2, 1, 1, 3, 3, 1, 2, 2, 3, 3, 3, 3, 3, 2, 2, 2, 1, 0, 1, 1, 0
+};
+
+VM VMInitialize(void *instructions, size_t instructions_size)
 {
     VM vm = { 0 };
     vm.memory = instructions;
+    vm.memory_size = instructions_size;
     vm.stack = NULL;
     vm.ip = vm.memory;
     vm.run = true;
@@ -115,8 +123,27 @@ u16 *GetVMMemory(VM *vm, u16 mem)
     return &vm->memory[IS_REGISTER(mem) ? vm->regs[mem - 32768] : mem];
 }
 
+void DumpMemory(VM *vm, char *path, i32 start)
+{
+    FILE *fp = fopen(path, "wa");
+    u16 *ip = vm->memory;
+    for (i32 i = start; i < vm->memory_size; i += INSTRUCTION_ARGS[*ip] + 1) {
+        ip = vm->memory + i;
+        if (!(INSTRUCTION_HALT <= *ip && *ip <= INSTRUCTION_NOOP))
+            break;
+        fprintf(fp, "%06d %s", i, INSTRUCTION_STRINGS[*ip]);
+        for (i32 j = 1; j <= INSTRUCTION_ARGS[*ip]; j++) {
+            fprintf(fp, "%.*s%s%hu", 2, " ", IS_REGISTER(*(ip + j)) ? "R" : "", *(ip + j) % REGISTER_BASE);
+        }
+        fprintf(fp, "\n");
+    }
+    fclose(fp);
+}
+
 int main(int argc, char **argv)
 {
+    assert(ARRSIZE(INSTRUCTION_ARGS) == ARRSIZE(INSTRUCTION_STRINGS));
+
     if (argc < 2) {
         fprintf(stderr, USAGE, argv[0]);
         exit(1);
@@ -138,12 +165,17 @@ int main(int argc, char **argv)
 
     // run the challenge.bin
 
-    VM vm = VMInitialize(buf);
+    VM vm = VMInitialize(buf, size);
 
     vm.disassemble = true;
 
+    unlink("disassembly.asm");
+
+    DumpMemory(&vm, "disassembly.asm", 6049);
+    DumpMemory(&vm, "disassembly.asm", 5476);
+
 #define DISASSEMBLE(args)  if (vm.disassemble) { \
-    fprintf(stderr, "> %s", INSTRUCTION_STRINGS[GetVMInstruction(&vm)]); \
+    fprintf(stderr, "> %06ld %s", vm.ip - vm.memory, INSTRUCTION_STRINGS[GetVMInstruction(&vm)]); \
     for (int disassemble_args_idx__ = 1; disassemble_args_idx__ <= args; disassemble_args_idx__++) \
         fprintf(stderr, "%.*s%s%hu", 2, " ", IS_REGISTER(*(vm.ip + disassemble_args_idx__)) ? "R" : "", *(vm.ip + disassemble_args_idx__) % REGISTER_BASE); \
     fprintf(stderr, "\n"); \

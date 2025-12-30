@@ -23,7 +23,7 @@ while IFS= read -r line; do
     echo -e "\033[32m$line\033[0m"
     ((count++))
   elif [[ -z "$invalid" ]]; then
-    echo "\033[31m$line\033[0m"
+    echo -e "\033[31m$line\033[0m"
     ((invalid++))
   fi
 done < <(sort -u <(cut -d' ' -f1 < "$1"))
