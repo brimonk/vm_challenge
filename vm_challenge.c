@@ -34,6 +34,9 @@ typedef struct VM {
 #define USAGE    "%s <instructions.bin>\n"
 #define ILLEGAL  "ILLEGAL %s ENCOUNTERED! %hd\n"
 
+#define REGISTER_BASE    32768
+#define IS_REGISTER(r)   (32768 <= (r) && (r) <= 32775)
+
 VM VMInitialize(void *instructions)
 {
     VM vm = { 0 };
@@ -62,9 +65,10 @@ u16 GetVMValue(VM *vm, u16 v)
     }
 }
 
+// this function purposefully named wrong - it just gets the destination
 u16 *GetVMRegister(VM *vm, u16 r)
 {
-    return &vm->regs[r - 32768];
+    return IS_REGISTER(r) ? &vm->regs[r - 32768] : &vm->memory[r];
 }
 
 int main(int argc, char **argv)
@@ -143,7 +147,17 @@ int main(int argc, char **argv)
                 break;
             }
 
-            // case INSTRUCTION_ADD:
+            case INSTRUCTION_ADD: {
+                u16 *a = GetVMRegister(&vm, *++vm.ip);
+                u16 b = GetVMValue(&vm, *++vm.ip);
+                u16 c = GetVMValue(&vm, *++vm.ip);
+
+                *a = b + c;
+                *a %= REGISTER_BASE;
+
+                break;
+            }
+
             // case INSTRUCTION_MUL:
             // case INSTRUCTION_MOD:
             // case INSTRUCTION_AND:
