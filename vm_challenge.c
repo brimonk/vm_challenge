@@ -187,7 +187,18 @@ int main(int argc, char **argv)
                 break;
             }
 
-            // case INSTRUCTION_MUL:
+            case INSTRUCTION_MULT: {
+                u16 *a = GetVMRegister(&vm, *++vm.ip);
+                u16 b = GetVMValue(&vm, *++vm.ip);
+                u16 c = GetVMValue(&vm, *++vm.ip);
+
+                // sarah made me scared... :(
+                // *a = (u32)b * (u32)c;
+                // *a %= REGISTER_BASE;
+                *a = ((u32)b * (u32)c) % REGISTER_BASE;
+
+                break;
+            }
 
             case INSTRUCTION_MOD: {
                 u16 *a = GetVMRegister(&vm, *++vm.ip);
