@@ -1,11 +1,25 @@
 #include "common.h"
 
+/*
+ * If you find yourself trapped in an alternate dimension with nothing but a
+ * hand-held teleporter, you will need to extract the confirmation algorithm,
+ * reimplement it on more powerful hardware, and optimize it.  This should, at the
+ * very least, allow you to determine the value of the eighth register which would
+ * have been accepted by the teleporter's confirmation mechanism.
+ *
+ * Then, set the eighth register to this value, activate the teleporter, and
+ * bypass the confirmation mechanism.  If the eighth register is set correctly, no
+ * anomalies should be experienced, but beware - if it is set incorrectly, the
+ * now-bypassed confirmation mechanism will not protect you!
+ */
+
 typedef struct VM {
     u16 regs[8];
     u16 *memory;
     u16 *stack;
     u16 *ip;
     i32 run;
+    i32 disassemble;
 } VM;
 
 #define INSTRUCTION_HALT    0x00
@@ -36,6 +50,31 @@ typedef struct VM {
 
 #define REGISTER_BASE    32768
 #define IS_REGISTER(r)   (32768 <= (r) && (r) <= 32775)
+
+char *INSTRUCTION_STRINGS[] = {
+    "HLT",
+    "SET",
+    "PUSH",
+    "POP",
+    "EQ",
+    "GT",
+    "JMP",
+    "JT",
+    "JF",
+    "ADD",
+    "MULT",
+    "MOD",
+    "AND",
+    "OR",
+    "NOT",
+    "RMEM",
+    "WMEM",
+    "CALL",
+    "RET",
+    "OUT",
+    "IN",
+    "NOOP"
+};
 
 VM VMInitialize(void *instructions)
 {
@@ -101,16 +140,27 @@ int main(int argc, char **argv)
 
     VM vm = VMInitialize(buf);
 
+    vm.disassemble = true;
+
+#define DISASSEMBLE(args)  if (vm.disassemble) { \
+    fprintf(stderr, "> %s", INSTRUCTION_STRINGS[GetVMInstruction(&vm)]); \
+    for (int disassemble_args_idx__ = 1; disassemble_args_idx__ <= args; disassemble_args_idx__++) \
+        fprintf(stderr, "%.*s%s%hu", 2, " ", IS_REGISTER(*(vm.ip + disassemble_args_idx__)) ? "R" : "", *(vm.ip + disassemble_args_idx__) % REGISTER_BASE); \
+    fprintf(stderr, "\n"); \
+    } else {}
+
     for (; vm.run; vm.ip++) {
     EDDIE_VAN_HALEN:
         switch (GetVMInstruction(&vm)) {
             NOT_FREDDIE_MERCURY:
             case INSTRUCTION_HALT: {
+                DISASSEMBLE(0);
                 vm.run = false;
                 break;
             }
 
             case INSTRUCTION_SET: {
+                DISASSEMBLE(2);
                 u16 *a = GetVMRegister(&vm, *++vm.ip);
                 u16 b = GetVMValue(&vm, *++vm.ip);
                 *a = b;
@@ -118,12 +168,14 @@ int main(int argc, char **argv)
             }
 
             case INSTRUCTION_PUSH: {
+                DISASSEMBLE(1);
                 u16 v = GetVMValue(&vm, *++vm.ip);
                 arrput(vm.stack, v);
                 break;
             }
 
             case INSTRUCTION_POP: {
+                DISASSEMBLE(1);
                 assert(arrlen(vm.stack) > 0);
                 u16 v = arrpop(vm.stack);
                 u16 *a = GetVMRegister(&vm, *++vm.ip);
@@ -132,6 +184,7 @@ int main(int argc, char **argv)
             }
 
             case INSTRUCTION_EQ: {
+                DISASSEMBLE(3);
                 u16 *a = GetVMRegister(&vm, *++vm.ip);
                 u16 b = GetVMValue(&vm, *++vm.ip);
                 u16 c = GetVMValue(&vm, *++vm.ip);
@@ -142,6 +195,7 @@ int main(int argc, char **argv)
             }
 
             case INSTRUCTION_GT: {
+                DISASSEMBLE(3);
                 u16 *a = GetVMRegister(&vm, *++vm.ip);
                 u16 b = GetVMValue(&vm, *++vm.ip);
                 u16 c = GetVMValue(&vm, *++vm.ip);
@@ -152,6 +206,7 @@ int main(int argc, char **argv)
             }
 
             case INSTRUCTION_JMP: {
+                DISASSEMBLE(1);
                 vm.ip++;
                 vm.ip = GetVMValue(&vm, *vm.ip) + vm.memory;
                 goto EDDIE_VAN_HALEN;
@@ -159,6 +214,7 @@ int main(int argc, char **argv)
             }
 
             case INSTRUCTION_JT: {
+                DISASSEMBLE(2);
                 u16 a = GetVMValue(&vm, *++vm.ip);
                 u16 b = GetVMValue(&vm, *++vm.ip);
 
@@ -171,6 +227,7 @@ int main(int argc, char **argv)
             }
 
             case INSTRUCTION_JF: {
+                DISASSEMBLE(2);
                 u16 a = GetVMValue(&vm, *++vm.ip);
                 u16 b = GetVMValue(&vm, *++vm.ip);
 
@@ -183,6 +240,7 @@ int main(int argc, char **argv)
             }
 
             case INSTRUCTION_ADD: {
+                DISASSEMBLE(3);
                 u16 *a = GetVMRegister(&vm, *++vm.ip);
                 u16 b = GetVMValue(&vm, *++vm.ip);
                 u16 c = GetVMValue(&vm, *++vm.ip);
@@ -194,6 +252,7 @@ int main(int argc, char **argv)
             }
 
             case INSTRUCTION_MULT: {
+                DISASSEMBLE(3);
                 u16 *a = GetVMRegister(&vm, *++vm.ip);
                 u16 b = GetVMValue(&vm, *++vm.ip);
                 u16 c = GetVMValue(&vm, *++vm.ip);
@@ -207,6 +266,7 @@ int main(int argc, char **argv)
             }
 
             case INSTRUCTION_MOD: {
+                DISASSEMBLE(3);
                 u16 *a = GetVMRegister(&vm, *++vm.ip);
                 u16 b = GetVMValue(&vm, *++vm.ip);
                 u16 c = GetVMValue(&vm, *++vm.ip);
@@ -217,6 +277,7 @@ int main(int argc, char **argv)
             }
 
             case INSTRUCTION_AND: {
+                DISASSEMBLE(3);
                 u16 *a = GetVMRegister(&vm, *++vm.ip);
                 u16 b = GetVMValue(&vm, *++vm.ip);
                 u16 c = GetVMValue(&vm, *++vm.ip);
@@ -227,6 +288,7 @@ int main(int argc, char **argv)
             }
 
             case INSTRUCTION_OR: {
+                DISASSEMBLE(3);
                 u16 *a = GetVMRegister(&vm, *++vm.ip);
                 u16 b = GetVMValue(&vm, *++vm.ip);
                 u16 c = GetVMValue(&vm, *++vm.ip);
@@ -237,6 +299,7 @@ int main(int argc, char **argv)
             }
 
             case INSTRUCTION_NOT: {
+                DISASSEMBLE(2);
                 u16 *a = GetVMRegister(&vm, *++vm.ip);
                 u16 b = GetVMValue(&vm, *++vm.ip);
 
@@ -246,6 +309,7 @@ int main(int argc, char **argv)
             }
 
             case INSTRUCTION_RMEM: {
+                DISASSEMBLE(2);
                 u16 *a = GetVMRegister(&vm, *++vm.ip);
                 u16 *b = GetVMMemory(&vm, *++vm.ip);
                 *a = *b;
@@ -253,6 +317,7 @@ int main(int argc, char **argv)
             }
 
             case INSTRUCTION_WMEM: {
+                DISASSEMBLE(2);
                 u16 *a = GetVMMemory(&vm, *++vm.ip);
                 u16 b = GetVMValue(&vm, *++vm.ip);
                 *a = b;
@@ -260,6 +325,7 @@ int main(int argc, char **argv)
             }
 
             case INSTRUCTION_CALL: {
+                DISASSEMBLE(1);
                 u16 a = GetVMValue(&vm, *++vm.ip);
                 u16 next = vm.ip + 1 - vm.memory;
                 arrput(vm.stack, next);
@@ -269,6 +335,7 @@ int main(int argc, char **argv)
             }
 
             case INSTRUCTION_RET: {
+                DISASSEMBLE(0);
                 if (arrlen(vm.stack) == 0) {
                     goto NOT_FREDDIE_MERCURY;
                 }
@@ -279,12 +346,14 @@ int main(int argc, char **argv)
             }
 
             case INSTRUCTION_OUT: {
+                DISASSEMBLE(1);
                 vm.ip++;
                 putchar(GetVMValue(&vm, *vm.ip));
                 break;
             }
 
             case INSTRUCTION_IN: {
+                DISASSEMBLE(1);
                 u16 *a = GetVMRegister(&vm, *++vm.ip);
                 int c = getchar() & 0xff;
                 *a = (u16)c;
@@ -292,6 +361,7 @@ int main(int argc, char **argv)
             }
 
             case INSTRUCTION_NOOP: {
+                DISASSEMBLE(0); // ????
                 break;
             }
 
